@@ -1,0 +1,41 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.pyc
+
+# Virtualenv
+venv/
+ENV/
+.env
+
+# Django
+*.sqlite3
+db.sqlite3
+/staticfiles/
+/mediafiles/
+backend_code.txt
+backend_code.sh
+dump.rdb
+
+# Credentials
+firebase_credentials.json
+
+# VSCode/IDE
+.vscode/
+.idea/
+.DS_Store
+
+# Logs
+*.log
+
+# Test/coverage
+htmlcov/
+.coverage
+.tox/
+
+# Misc
+*.bak
+*.swp
+companies/csv_uploads/ 
