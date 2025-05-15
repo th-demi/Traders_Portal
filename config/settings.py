@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'drf_yasg',
     'django_filters',
     'django_ratelimit',
+    'csp',
     # Local apps
     'users',
     'companies',
@@ -59,6 +60,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'csp.middleware.CSPMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -179,3 +181,70 @@ CACHES = {
         'LOCATION': 'redis://127.0.0.1:6379/1',
     }
 }
+
+# Security Settings
+SECURE_BROWSER_XSS_FILTER = True
+SECURE_CONTENT_TYPE_NOSNIFF = True
+X_FRAME_OPTIONS = 'DENY'
+
+# Content Security Policy
+CONTENT_SECURITY_POLICY = {
+    'DIRECTIVES': {
+        'default-src': ("'self'",),
+        'script-src': (
+            "'self'",
+            "'unsafe-inline'",
+            "'unsafe-eval'",
+            "https://accounts.google.com",
+            "https://www.gstatic.com",
+            "https://apis.google.com",
+            "https://ssl.gstatic.com",
+            "https://*.gstatic.com",
+            "https://*.google.com",
+            "https://*.googleusercontent.com",
+            "https://cdn.jsdelivr.net",
+        ),
+        'style-src': (
+            "'self'",
+            "'unsafe-inline'",
+            "https://accounts.google.com",
+            "https://cdn.jsdelivr.net",
+        ),
+        'img-src': (
+            "'self'",
+            "https:",
+            "data:",
+            "https://*.googleusercontent.com",
+            "https://*.gstatic.com",
+        ),
+        'frame-src': (
+            "'self'",
+            "https://accounts.google.com",
+            "https://*.google.com",
+            "https://traders-portal-tradebrains.firebaseapp.com",
+            "https://*.firebaseapp.com",
+        ),
+        'connect-src': (
+            "'self'",
+            "https://accounts.google.com",
+            "https://*.google.com",
+            "https://*.gstatic.com",
+            "https://identitytoolkit.googleapis.com",
+            "https://securetoken.googleapis.com",
+            "https://traders-portal-tradebrains.firebaseapp.com",
+            "https://*.firebaseapp.com",
+            "https://*.firebaseio.com",
+            "https://www.googleapis.com",
+        ),
+        'font-src': (
+            "'self'",
+            "https://cdn.jsdelivr.net",
+            "data:",
+            "https://*.gstatic.com",
+        ),
+    }
+}
+
+# Cross-Origin Policies for Google Identity Services
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin-allow-popups'
+SECURE_CROSS_ORIGIN_EMBEDDER_POLICY = 'require-corp'

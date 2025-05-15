@@ -34,10 +34,7 @@ class GoogleLoginView(APIView):
 
     def post(self, request):
         if not firebase_admin._apps:
-            cred_json = os.environ.get('FIREBASE_CREDENTIALS_JSON')
-            if cred_json is None:
-                return Response({'detail': 'FIREBASE_CREDENTIALS_JSON env variable not set'}, status=500)
-            cred_dict = json.loads(cred_json)
+            cred_dict = get_firebase_credentials_from_env()
             cred = credentials.Certificate(cred_dict)
             firebase_admin.initialize_app(cred)
         id_token = request.data.get('id_token')
@@ -64,3 +61,19 @@ class GoogleLoginView(APIView):
             })
         except Exception as e:
             return Response({'detail': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+def get_firebase_credentials_from_env():
+    return {
+        "type": os.environ.get("FIREBASE_TYPE"),
+        "project_id": os.environ.get("FIREBASE_PROJECT_ID"),
+        "private_key_id": os.environ.get("FIREBASE_PRIVATE_KEY_ID"),
+        "private_key": os.environ.get("FIREBASE_PRIVATE_KEY").replace("\\n", "\n"),
+        "client_email": os.environ.get("FIREBASE_CLIENT_EMAIL"),
+        "client_id": os.environ.get("FIREBASE_CLIENT_ID"),
+        "auth_uri": os.environ.get("FIREBASE_AUTH_URI"),
+        "token_uri": os.environ.get("FIREBASE_TOKEN_URI"),
+        "auth_provider_x509_cert_url": os.environ.get("FIREBASE_AUTH_PROVIDER_X509_CERT_URL"),
+        "client_x509_cert_url": os.environ.get("FIREBASE_CLIENT_X509_CERT_URL"),
+        "universe_domain": os.environ.get("FIREBASE_UNIVERSE_DOMAIN"),
+    }

@@ -1,0 +1,91 @@
+{% extends 'core/base.html' %}
+
+{% block title %}Google Login | Traders Portal{% endblock %}
+
+{% block extra_css %}
+<style>
+    .google-login-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 50px;
+    }
+    .google-btn {
+        margin-top: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6 offset-md-3">
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h3 class="mb-0">Google Login</h3>
+            </div>
+            <div class="card-body text-center">
+                <p>Click the button below to sign in with your Google account.</p>
+                <div class="google-login-container">
+                    <button onclick="signInWithGoogle()" class="btn btn-danger google-btn">
+                        <img src="https://developers.google.com/identity/images/g-logo.png" style="width:20px; margin-right:8px; vertical-align:middle;"> Sign in with Google
+                    </button>
+                </div>
+                <div class="mt-4">
+                    <a href="{% url 'login' %}" class="btn btn-outline-secondary">Back to Login</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Firebase JS SDK -->
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script>
+    // Your Firebase config
+    const firebaseConfig = {
+        apiKey: "AIzaSyD5YuZ9fgWgj7LoqpyUmAOKnAc7UUTQows",
+        authDomain: "traders-portal-tradebrains.firebaseapp.com",
+        projectId: "traders-portal-tradebrains",
+        storageBucket: "traders-portal-tradebrains.firebasestorage.app",
+        messagingSenderId: "965430611709",
+        appId: "1:965430611709:web:630029477878464059f894",
+        measurementId: "G-XBWZ9RDMW5"
+    };
+    firebase.initializeApp(firebaseConfig);
+
+    function signInWithGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        firebase.auth().signInWithPopup(provider)
+            .then((result) => result.user.getIdToken())
+            .then((idToken) => {
+                document.body.style.cursor = 'wait';
+                return fetch('{% url "google_login_callback" %}', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id_token: idToken })
+                });
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('Network response was not ok');
+                return res.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '{% url "home" %}';
+                } else {
+                    throw new Error(data.error || 'Login failed');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('An error occurred during login: ' + err.message);
+            })
+            .finally(() => {
+                document.body.style.cursor = 'default';
+            });
+    }
+</script>
+{% endblock %}
