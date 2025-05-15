@@ -37,7 +37,7 @@ urlpatterns = [
     path('api/users/', include('users.urls')),
 
     # Core URLs (includes both SSR pages and API endpoints)
-    path('', include('core.urls')),
+    # path('', include('core.urls')),
 
     # API documentation
     path('swagger/', schema_view.with_ui('swagger',
