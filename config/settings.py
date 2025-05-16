@@ -248,3 +248,14 @@ CONTENT_SECURITY_POLICY = {
 # Cross-Origin Policies for Google Identity Services
 SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin-allow-popups'
 SECURE_CROSS_ORIGIN_EMBEDDER_POLICY = 'require-corp'
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        'Bearer': {
+            'type': 'apiKey',
+            'name': 'Authorization',
+            'in': 'header',
+            'description': 'JWT Authorization header using the Bearer scheme. Example: "Bearer {token}"',
+        }
+    }
+}
