@@ -1,6 +1,6 @@
 # Traders Portal Backend
 
-A production-ready Django backend for a stock watchlist and company search platform, featuring JWT and Google authentication, efficient APIs, async CSV ingestion, rate limiting, and robust error handling.
+A production-ready Django backend for a stock watchlist and company search platform, featuring JWT and Google authentication, efficient APIs, async CSV ingestion, and robust error handling.
 
 ---
 
@@ -9,7 +9,6 @@ A production-ready Django backend for a stock watchlist and company search platf
 - Company search/filter API (by name, symbol)
 - User watchlist API (add/remove/list)
 - Efficient DB queries and indexes
-- Rate limiting (Redis)
 - Robust error handling and logging
 - Automated tests
 - Swagger/OpenAPI docs
@@ -29,9 +28,8 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Database & Redis
-- By default uses SQLite for dev. For prod, configure PostgreSQL in `config/settings.py`.
-- **Redis** must be running locally or use a cloud Redis (update `CACHES` in `settings.py`).
+### 2. Database
+- By default uses SQLite for dev. For prod, configure PostgreSQL in `config/settings.py` and set `DATABASE_URL` in your environment.
 
 ### 3. Firebase Credentials
 - Download your Firebase service account JSON.
@@ -74,14 +72,13 @@ python manage.py test
 ---
 
 ## Deployment (Render)
-1. Add your environment variables (e.g., `SECRET_KEY`, `DEBUG=0`, `ALLOWED_HOSTS`, `DATABASE_URL`, `REDIS_URL`, etc.)
-2. Set up a Redis add-on or external Redis.
-3. Use Gunicorn for WSGI serving.
-4. Collect static files:
+1. Add your environment variables (e.g., `SECRET_KEY`, `DEBUG=0`, `ALLOWED_HOSTS`, `DATABASE_URL`, etc.)
+2. Use Gunicorn for WSGI serving.
+3. Collect static files:
    ```bash
    python manage.py collectstatic
    ```
-5. See Render docs for Django deployment specifics.
+4. See Render docs for Django deployment specifics.
 
 ---
 
@@ -90,7 +87,6 @@ python manage.py test
 - Google Auth via Firebase
 - Input validation and DRF protections
 - CSRF, SQL injection, and XSS protections (Django defaults)
-- Rate limiting (Redis-backed)
 - Production cache and static/media settings
 
 ---
