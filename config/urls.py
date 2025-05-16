@@ -19,6 +19,9 @@ from django.urls import path, include
 from rest_framework import permissions
 from drf_yasg.views import get_schema_view
 from drf_yasg import openapi
+from rest_framework.routers import DefaultRouter
+from companies.views import CompanyViewSet
+from watchlist.views import WatchlistViewSet
 
 schema_view = get_schema_view(
     openapi.Info(
@@ -30,13 +33,19 @@ schema_view = get_schema_view(
     permission_classes=(permissions.AllowAny,),
 )
 
+# API routers
+router = DefaultRouter()
+router.register(r'companies', CompanyViewSet, basename='company-api')
+router.register(r'watchlist', WatchlistViewSet, basename='watchlist-api')
+
 urlpatterns = [
     path('admin/', admin.site.urls),
 
     # API endpoints
+    path('api/', include(router.urls)),
     path('api/users/', include('users.urls')),
 
-    # Core URLs (includes both SSR pages and API endpoints)
+    # SSR routes (HTML) only in core.urls
     path('', include('core.urls')),
 
     # API documentation

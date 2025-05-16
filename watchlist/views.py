@@ -1,24 +1,24 @@
 from django.shortcuts import render
-from rest_framework import viewsets, permissions, status
+from rest_framework import viewsets, permissions, status, mixins
 from rest_framework.response import Response
 from .models import Watchlist
 from .serializers import WatchlistSerializer
-from companies.models import Company
-from django.db.models import Prefetch
 
-# Create your views here.
 
-class WatchlistViewSet(viewsets.ModelViewSet):
+class WatchlistViewSet(
+    mixins.ListModelMixin,
+    mixins.DestroyModelMixin,
+    viewsets.GenericViewSet
+):
     serializer_class = WatchlistSerializer
     permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
+        # Handle Swagger schema generation
+        if getattr(self, 'swagger_fake_view', False):
+            return Watchlist.objects.none()
         return Watchlist.objects.filter(user=self.request.user).select_related('company')
 
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-    def destroy(self, request, *args, **kwargs):
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    def update(self, request, *args, **kwargs):
+        """Handle PUT requests for full update."""
+        return super().update(request, *args, **kwargs)

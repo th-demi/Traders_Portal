@@ -1,7 +1,4 @@
-from rest_framework.routers import DefaultRouter
-from companies.views import CompanyViewSet
-from watchlist.views import WatchlistViewSet
-from django.urls import path, include
+from django.urls import path
 from .views import (
     home_view, company_list_view, watchlist_view,
     add_to_watchlist, remove_from_watchlist,
@@ -9,17 +6,7 @@ from .views import (
     google_login_view, google_login_callback
 )
 
-# API routes
-router = DefaultRouter()
-router.register(r'companies', CompanyViewSet, basename='company-api')
-router.register(r'watchlist', WatchlistViewSet, basename='watchlist-api')
-
-# URL patterns for both API and SSR views
 urlpatterns = [
-    # API endpoints
-    path('api/', include(router.urls)),
-
-    # SSR pages
     path('', home_view, name='home'),
     path('companies/', company_list_view, name='company_list'),
     path('watchlist/', watchlist_view, name='watchlist'),
