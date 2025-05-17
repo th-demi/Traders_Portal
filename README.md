@@ -2,7 +2,27 @@
 
 A production-ready Django backend for a stock watchlist and company search platform, featuring JWT and Google authentication, efficient APIs, async CSV ingestion, and robust error handling.
 
----
+## Live Demo & Documentation
+- **Deployed Backend**: [https://traders-portal.onrender.com/](https://traders-portal.onrender.com/)
+- **Postman Documentation**: [API Collection](https://postman.co/workspace/My-Workspace~6b4ded8c-d4f2-47ee-891d-601a5dbe0922/collection/39450369-65beef12-5ad9-406d-9aee-48f768c8584f?action=share&creator=39450369)
+
+## Accessing the Application
+
+### Server-Side Rendered (SSR) Pages
+Access these through your browser at the root URL:
+- `/` - Home page
+- `/login` - Login page
+- `/register` - Registration page
+- `/watchlist` - Watchlist management
+- `/companies` - Company search and listing
+
+### REST API Endpoints
+All API endpoints are prefixed with `/api/`:
+- `/api/users/` - User management
+- `/api/companies/` - Company search and data
+- `/api/watchlist/` - Watchlist operations
+- `/api/swagger/` - API documentation (Swagger UI)
+- `/api/redoc/` - Alternative API documentation (ReDoc)
 
 ## Features
 - User registration, JWT login, and Google Auth (Firebase)
@@ -14,8 +34,28 @@ A production-ready Django backend for a stock watchlist and company search platf
 - Swagger/OpenAPI docs
 - Asynchronous CSV watcher (auto-imports companies)
 - Production-ready settings and security best practices
+- Rate limiting for API protection
 
----
+## Rate Limiting
+The API implements the following rate limits to prevent abuse:
+
+### Authentication Endpoints
+- Login/Register: 5 requests per minute
+- Token Refresh: 5 requests per minute
+
+### User Operations
+- Anonymous users: 100 requests per day
+- Authenticated users: 1000 requests per day
+- Burst rate: 5 requests per minute
+- Sustained rate: 100 requests per hour
+
+### Watchlist Operations
+- Add/Remove companies: 10 requests per minute
+- List operations: Global limits + burst protection
+
+### Search Operations
+- Company search: 20 requests per minute
+- List operations: Global limits + burst protection
 
 ## Setup
 
@@ -46,13 +86,9 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
----
-
 ## API Documentation
-- Swagger UI: [http://localhost:8000/swagger/](http://localhost:8000/swagger/)
-- Redoc: [http://localhost:8000/redoc/](http://localhost:8000/redoc/)
-
----
+- Swagger UI: [http://localhost:8000/api/swagger/](http://localhost:8000/api/swagger/)
+- Redoc: [http://localhost:8000/api/redoc/](http://localhost:8000/api/redoc/)
 
 ## CSV Watcher (Async Company Import)
 - Place CSV files (with columns: `company_name`, `symbol`, `scripcode`) in `companies/csv_uploads/`.
@@ -62,14 +98,10 @@ python companies/csv_watcher.py
 ```
 - Companies will be auto-imported/updated on file change.
 
----
-
 ## Testing
 ```bash
 python manage.py test
 ```
-
----
 
 ## Deployment (Render)
 1. Add your environment variables (e.g., `SECRET_KEY`, `DEBUG=0`, `ALLOWED_HOSTS`, `DATABASE_URL`, etc.)
@@ -80,16 +112,16 @@ python manage.py test
    ```
 4. See Render docs for Django deployment specifics.
 
----
-
 ## Security Checklist
 - Uses JWT for API auth
 - Google Auth via Firebase
 - Input validation and DRF protections
 - CSRF, SQL injection, and XSS protections (Django defaults)
 - Production cache and static/media settings
-
----
+- Rate limiting for API protection
+- Content Security Policy (CSP) headers
+- Secure cookie settings
+- CORS configuration
 
 ## License
 MIT 
