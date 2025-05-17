@@ -12,12 +12,11 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password',
+        fields = ('email', 'username', 'password',
                   'password2', 'first_name', 'last_name')
         extra_kwargs = {
             'first_name': {'required': True},
-            'last_name': {'required': True},
-            'email': {'required': True}
+            'last_name': {'required': True}
         }
 
     def validate(self, attrs):
@@ -35,16 +34,22 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name')
-        read_only_fields = ('id', 'username', 'email')
+        fields = ('id', 'email', 'username', 'first_name', 'last_name')
+        read_only_fields = ('id', 'email')
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ('id', 'username', 'email', 'first_name', 'last_name')
+        fields = ('id', 'email', 'username', 'first_name', 'last_name')
+        read_only_fields = ('id', 'email')
 
 
 class LoginSerializer(serializers.Serializer):
-    username = serializers.CharField()
-    password = serializers.CharField()
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
+
+
+class UserCreateSerializer(UserRegistrationSerializer):
+    class Meta(UserRegistrationSerializer.Meta):
+        pass

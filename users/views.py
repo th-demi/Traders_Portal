@@ -1,9 +1,14 @@
 from django.shortcuts import render
 from rest_framework import generics, permissions, status, viewsets
 from rest_framework.response import Response
-from rest_framework import status
 from django.contrib.auth import get_user_model, authenticate
-from .serializers import UserRegistrationSerializer, UserProfileSerializer, LoginSerializer, UserSerializer, UserCreateSerializer
+from .serializers import (
+    UserRegistrationSerializer,
+    UserProfileSerializer,
+    LoginSerializer,
+    UserSerializer,
+    UserCreateSerializer
+)
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg.utils import swagger_auto_schema
@@ -16,6 +21,7 @@ User = get_user_model()
 class RegisterView(generics.CreateAPIView):
     permission_classes = (permissions.AllowAny,)
     serializer_class = UserRegistrationSerializer
+    throttle_classes = [AuthRateThrottle]
 
     @swagger_auto_schema(
         request_body=UserRegistrationSerializer,
@@ -30,7 +36,6 @@ class RegisterView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        # Do NOT issue JWT tokens here. Only return user info.
         return Response({
             'user': UserProfileSerializer(user).data,
             'message': 'Registration successful. Please log in.'
@@ -39,6 +44,7 @@ class RegisterView(generics.CreateAPIView):
 
 class LoginView(APIView):
     permission_classes = (permissions.AllowAny,)
+    throttle_classes = [AuthRateThrottle]
 
     @swagger_auto_schema(
         request_body=LoginSerializer,
@@ -51,19 +57,19 @@ class LoginView(APIView):
         security=[]
     )
     def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        if not username or not password:
-            # Do not log sensitive info
-            return Response({
-                'error': 'Please provide both username and password.'
-            }, status=status.HTTP_400_BAD_REQUEST)
+        serializer = LoginSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        username = serializer.validated_data['username']
+        password = serializer.validated_data['password']
+
         user = authenticate(username=username, password=password)
         if not user:
-            # Do not reveal if username or password is wrong
             return Response({
                 'error': 'Invalid credentials.'
             }, status=status.HTTP_401_UNAUTHORIZED)
+
         refresh = RefreshToken.for_user(user)
         return Response({
             'user': UserProfileSerializer(user).data,
@@ -78,7 +84,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
     permission_classes = [permissions.IsAuthenticated]
-    throttle_classes = [BurstRateThrottle, AuthRateThrottle]
+    throttle_classes = [BurstRateThrottle]
 
     def get_serializer_class(self):
         if self.action == 'create':
