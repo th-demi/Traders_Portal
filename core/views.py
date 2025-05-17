@@ -183,8 +183,6 @@ def google_login_callback(request):
         try:
             # Verify ID token with error handling
             try:
-                # Use check_revoked=False and verify_expiry=True
-                # The audience parameter is not needed as we'll verify the token against the FirebaseApp instance
                 decoded_token = firebase_auth.verify_id_token(
                     id_token,
                     check_revoked=False
@@ -200,18 +198,21 @@ def google_login_callback(request):
 
             except firebase_auth.InvalidIdTokenError as ie:
                 print(f"Invalid ID token: {str(ie)}")
-                return JsonResponse({'success': False, 'error': 'Invalid ID token'}, status=400)
+                return JsonResponse({'success': False, 'error': 'Invalid ID token'}, status=401)
 
             # Get or create user
             user, created = User.objects.get_or_create(
                 email=email,
                 defaults={
-                    # Use part before @ as username
                     'username': email.split('@')[0],
                     'first_name': decoded_token.get('name', '').split(' ')[0] if decoded_token.get('name') else '',
                     'last_name': ' '.join(decoded_token.get('name', '').split(' ')[1:]) if decoded_token.get('name', '') and len(decoded_token.get('name', '').split(' ')) > 1 else ''
                 }
             )
+
+            # If user exists but is inactive/blocked
+            if not user.is_active:
+                return JsonResponse({'success': False, 'error': 'User account is inactive.'}, status=403)
 
             # Log the user in
             login(request, user)
@@ -220,7 +221,7 @@ def google_login_callback(request):
 
         except Exception as e:
             print(f"Token verification error: {str(e)}")
-            return JsonResponse({'success': False, 'error': f'Failed to verify token: {str(e)}'}, status=400)
+            return JsonResponse({'success': False, 'error': f'Failed to verify token: {str(e)}'}, status=401)
 
     except json.JSONDecodeError:
         return JsonResponse({'success': False, 'error': 'Invalid JSON data'}, status=400)

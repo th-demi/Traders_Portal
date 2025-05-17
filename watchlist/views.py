@@ -4,6 +4,8 @@ from .models import Watchlist
 from .serializers import WatchlistSerializer
 from drf_yasg.utils import swagger_auto_schema
 from drf_yasg import openapi
+from rest_framework.decorators import action
+from core.throttling import WatchlistRateThrottle, BurstRateThrottle
 
 
 class WatchlistViewSet(mixins.ListModelMixin,
@@ -12,6 +14,7 @@ class WatchlistViewSet(mixins.ListModelMixin,
                        viewsets.GenericViewSet):
     serializer_class = WatchlistSerializer
     permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [WatchlistRateThrottle, BurstRateThrottle]
 
     def get_queryset(self):
         # Handle Swagger schema generation
@@ -58,3 +61,25 @@ class WatchlistViewSet(mixins.ListModelMixin,
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    @action(detail=True, methods=['post'])
+    def add_company(self, request, pk=None):
+        throttle_classes = [WatchlistRateThrottle]
+        watchlist = self.get_object()
+        company_id = request.data.get('company_id')
+        if not company_id:
+            return Response({'error': 'company_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        watchlist.companies.add(company_id)
+        return Response(self.get_serializer(watchlist).data)
+
+    @action(detail=True, methods=['post'])
+    def remove_company(self, request, pk=None):
+        throttle_classes = [WatchlistRateThrottle]
+        watchlist = self.get_object()
+        company_id = request.data.get('company_id')
+        if not company_id:
+            return Response({'error': 'company_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        watchlist.companies.remove(company_id)
+        return Response(self.get_serializer(watchlist).data)

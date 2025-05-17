@@ -1,16 +1,20 @@
 from rest_framework import viewsets, filters, mixins
+from rest_framework.permissions import IsAuthenticated
+from django_filters.rest_framework import DjangoFilterBackend
 from .models import Company
 from .serializers import CompanySerializer
-from django_filters.rest_framework import DjangoFilterBackend
 from drf_yasg.utils import swagger_auto_schema
+from core.throttling import SearchRateThrottle, BurstRateThrottle
 
 
 class CompanyViewSet(
     mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
     viewsets.GenericViewSet
 ):
     queryset = Company.objects.all()
     serializer_class = CompanySerializer
+    permission_classes = [IsAuthenticated]
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -20,6 +24,7 @@ class CompanyViewSet(
     search_fields = ['company_name', 'symbol']
     ordering_fields = ['company_name', 'symbol']
     ordering = ['company_name']
+    throttle_classes = [SearchRateThrottle, BurstRateThrottle]
 
     @swagger_auto_schema(
         responses={

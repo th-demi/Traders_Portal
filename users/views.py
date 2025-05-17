@@ -1,12 +1,14 @@
 from django.shortcuts import render
-from rest_framework import generics, permissions, status
+from rest_framework import generics, permissions, status, viewsets
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth import get_user_model, authenticate
-from .serializers import UserRegistrationSerializer, UserProfileSerializer, LoginSerializer
+from .serializers import UserRegistrationSerializer, UserProfileSerializer, LoginSerializer, UserSerializer, UserCreateSerializer
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from drf_yasg.utils import swagger_auto_schema
+from rest_framework.decorators import action
+from core.throttling import AuthRateThrottle, BurstRateThrottle
 
 User = get_user_model()
 
@@ -70,3 +72,29 @@ class LoginView(APIView):
         })
 
 # Note: The token refresh endpoint is handled by rest_framework_simplejwt.views.TokenRefreshView, not by any custom logic in this file.
+
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    throttle_classes = [BurstRateThrottle, AuthRateThrottle]
+
+    def get_serializer_class(self):
+        if self.action == 'create':
+            return UserCreateSerializer
+        return UserSerializer
+
+    @action(detail=False, methods=['post'], permission_classes=[permissions.AllowAny])
+    def register(self, request):
+        throttle_classes = [AuthRateThrottle]
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'user': serializer.data,
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
