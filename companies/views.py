@@ -1,7 +1,7 @@
 from rest_framework import viewsets, filters, mixins
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from django_filters.rest_framework import DjangoFilterBackend
-from .models import Company
+from .models import Company, CompanyMetrics
 from .serializers import CompanySerializer
 from drf_yasg.utils import swagger_auto_schema
 from core.throttling import SearchRateThrottle, BurstRateThrottle
@@ -12,9 +12,9 @@ class CompanyViewSet(
     mixins.RetrieveModelMixin,
     viewsets.GenericViewSet
 ):
-    queryset = Company.objects.all()
+    queryset = Company.objects.all().select_related('metrics')
     serializer_class = CompanySerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
